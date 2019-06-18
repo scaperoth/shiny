@@ -18,11 +18,7 @@ RUN wget --no-verbose https://download3.rstudio.org/ubuntu-14.04/x86_64/VERSION 
     gdebi -n ss-latest.deb && \
     rm -f version.txt ss-latest.deb && \
     . /etc/environment && \
-    R -e "install.packages(c('shiny', 'rmarkdown'), repos='$MRAN')" && \
-    R -e "install.packages(c('shiny', 'tidyr'), repos='$MRAN')" && \
-    R -e "install.packages(c('shiny', 'plyr'), repos='$MRAN')" && \
-    R -e "install.packages(c('shiny', 'readr'), repos='$MRAN')" && \
-    R -e "install.packages(c('shiny', 'ggvis'), repos='$MRAN')" && \
+    R -e "install.packages(c('shiny', 'rmarkdown', 'tidyr', 'plyr', 'readr', 'ggvis'), repos='$MRAN')" && \
     cp -R /usr/local/lib/R/site-library/shiny/examples/* /srv/shiny-server/ && \
     chown shiny:shiny /var/lib/shiny-server
 
