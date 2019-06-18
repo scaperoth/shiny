@@ -1,36 +1,62 @@
-Docker for Shiny Server
+Scaperoth's Fork of Docker for Shiny Server
 =======================
 
-![](https://img.shields.io/docker/build/rocker/shiny.svg) ![](https://img.shields.io/docker/build/rocker/shiny-verse.svg)
-
-This is a Dockerfile for Shiny Server on Debian stable.  Dockerfiles building on specific versions of R are now available as tags.  These images are based on the corresponding [r-ver](https://hub.docker.com/rocker/r-ver) image.  You can request a specific R version using the appropriate tag, e.g. `rocker/shiny:3.3.2`.    
-
-
-
+This is a for of the project [Docker for Shiny Server](https://github.com/rocker-org/shiny)
 
 ## Usage:
 
+After installing Docker, you can build and run your own shiny server from the command line.
 
-To run a temporary container with Shiny Server:
-
-```sh
-docker run --rm -p 3838:3838 rocker/shiny
-```
-
-To get specific version of R with your shiny image (e.g. 3.4.4):
-
+To build the docker image for this:
 
 ```sh
-docker run --rm -p 3838:3838 rocker/shiny:3.4.4
+docker build --rm -t scaperoth/shiny .
 ```
 
-### Developer Notes
+You can replace `scaperoth/shiny` with whatever you want to call your app
 
-- **avoid `apt-get install r-cran-*`** on this image stack.  The requested R version and all R packages are installed from source in the version-stable stack.  Installing R packages from `apt` (e.g. the `r-cran-*` packages) will install the version of R and versions of the packages that were built for the stable debian release (e.g. `debian:stretch`), giving you a second version of R and different packages.  Please install R packages from source using the `install.packages()` R function (or the `install2.r` script), and use `apt` only to install necessary system libraries (e.g. `libxml2`). If you would prefer to install only the latest verions of packages from pre-built binaries using `apt-get`, consider using the `r-base` stack instead.  See [rocker-versioned README](https://github.com/rocker-org/rocker-versioned) for details on extending these images. 
+Then, to run the build with default examples:
 
-### shiny-verse
+```sh
+docker run --rm -p 3838:3838 scaperoth/shiny
+```
 
-You can use `rocker/shiny-verse` image stack instead if you'd like `tidyverse` packages pre-installed on your instance of shiny.  
+Or, to run the build with a custom app:
+
+```sh
+docker run --rm -p 3838:3838 -v \
+	<absolute path to custom shiny app>:/srv/shiny-server/  \
+	scaperoth/shiny
+```
+
+you can replace 3838 with any port you'd like. If you do replace 3838, make sure to expose the port you're using in the `Dockerfile` If you're exposing the application on a server, you might want something like 80:3838 or 443:3838
+
+### With docker-compose
+
+This repository includes an example `docker-compose` file, to facilitate using this container within docker networks.
+
+#### To run a container with Shiny Server:
+
+```sh
+docker-compose up
+```
+
+Then visit `http://localhost` (i.e., `http://localhost:80`) in a web browser. If you have an app in `/srv/shinyapps/appdir`, you can run the app by visiting http://localhost/appdir/.
+
+#### To add a Shiny app:
+
+1. Uncomment the last line of `docker-compose.yml`.
+1. Place the app in `mountpoints/apps/the-name-of-the-app`, replacing `the-name-of-the-app` with your app's name.
+
+If you have an app in `mountpoints/apps/appdir`, you can run the app by visiting http://localhost/appdir/. (If using boot2docker, visit http://192.168.59.103:3838/appdir/)
+
+### To add a new R library install
+
+1. Open the Dockerfile in the root of this project.
+1. Find the line that looks like this `install.packages(c('shiny', 'rmarkdown', 'tidyr', 'plyr', 'readr', 'ggvis')`
+1. Add the name of your package after `'ggvis'`
+
+Example: `install.packages(c('shiny', 'rmarkdown', 'tidyr', 'plyr', 'readr', 'ggvis', 'ggplot')`
 
 ### Connecting app and log directories to host
 
@@ -62,32 +88,11 @@ In the logs, you may see a note that shiny is running as root.  To run as a regu
 docker run --user shiny -p 3838:3838 --rm rocker/shiny
 ```
 
-
 ### Logs
 
 The Shiny Server log and all application logs are written to `stdout` and can be viewed using `docker logs`.
 
 The logs for individual apps are still kept in the `/var/log/shiny-server` directory, as described in the [Shiny Server Administrator's Guide]( http://docs.rstudio.com/shiny-server/#application-error-logs). If you want to avoid printing the logs to STDOUT, set up the environment variable `APPLICATION_LOGS_TO_STDOUT` to `false` (`-e APPLICATION_LOGS_TO_STDOUT=false`).
-
-
-### With docker-compose
-
-This repository includes an example `docker-compose` file, to facilitate using this container within docker networks.
-
-#### To run a container with Shiny Server:
-
-```sh
-docker-compose up
-```
-
-Then visit `http://localhost` (i.e., `http://localhost:80`) in a web browser. If you have an app in `/srv/shinyapps/appdir`, you can run the app by visiting http://localhost/appdir/.
-
-#### To add a Shiny app:
-
-1. Uncomment the last line of `docker-compose.yml`.
-1. Place the app in `mountpoints/apps/the-name-of-the-app`, replacing `the-name-of-the-app` with your app's name.
-
-If you have an app in `mountpoints/apps/appdir`, you can run the app by visiting http://localhost/appdir/. (If using boot2docker, visit http://192.168.59.103:3838/appdir/)
 
 #### Logs
 
@@ -110,6 +115,10 @@ COPY shiny-customized.config /etc/shiny-server/shiny-server.conf
 ```
 
 in the `Dockerfile`, and then run `docker-compose build shiny` to rebuild the container. Inline comments above that line in the `Dockerfile` provide additional documentation.
+
+### Futher Reading
+
+For more developer notes and details, view the original repo at [Docker for Shiny Server](https://github.com/rocker-org/shiny)
 
 ## Trademarks
 
